@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>بوابة المصالح الاقتصادية — service.intendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ─── نفس لغة تصميم مشروع invantaire (Tailwind بالقيم المكافئة) ─── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Amiri', 'Traditional Arabic', 'Tahoma', system-ui, sans-serif;
+    color: #1e293b; /* slate-800 */
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: space-between;
+    background: linear-gradient(180deg, #f1f5f9 0%, #fafaf9 50%, #ecfdf5 100%);
+  }
+  ::selection { background: #215a3e; color: #fff; }
+  .container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+
+  /* ─── اللافتة العلوية (مثل ترويسة invantaire) ─── */
+  .banner {
+    background: linear-gradient(90deg, #064e3b, #065f46, #134e4a);
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    border-bottom: 4px solid #f59e0b; /* amber-500 */
+    padding: .75rem 1rem;
+  }
+  .banner .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; font-size: .8rem; font-weight: 500; }
+  .banner .live { display: flex; align-items: center; gap: .5rem; }
+  .banner .live .pulse {
+    width: .625rem; height: .625rem; border-radius: 50%;
+    background: #34d399; animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 50% { opacity: .4; } }
+  .banner .republic { display: flex; align-items: center; gap: 1rem; color: #a7f3d0; }
+  @media (max-width: 640px) { .banner .republic { display: none; } }
+
+  /* ─── كرة علم الجزائر ثلاثية الأبعاد الدوّارة ─── */
+  .dz-ball {
+    position: relative;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    perspective: 130px;
+    flex-shrink: 0;
+  }
+  .dz-ball-spin {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    animation: dz-spin 5s linear infinite;
+  }
+  @keyframes dz-spin {
+    from { transform: rotateY(0deg); }
+    to   { transform: rotateY(360deg); }
+  }
+  .dz-flag {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, #006233 50%, #ffffff 50%);
+  }
+  .dz-flag svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* التظليل ثابت فوق الدوران ليبدو إضاءة كرة حقيقية */
+  .dz-shade {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 30% 26%, rgba(255,255,255,.65), rgba(255,255,255,0) 46%),
+      radial-gradient(circle at 74% 82%, rgba(0,0,0,.42), rgba(0,0,0,0) 52%);
+    box-shadow:
+      inset 0 0 5px rgba(0,0,0,.4),
+      0 2px 6px rgba(0,0,0,.4);
+  }
+
+  /* ─── البطاقة الرئيسية ─── */
+  .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; width: 100%; }
+  .card {
+    position: relative; width: 100%; max-width: 72rem;
+    background: rgba(255,255,255,.95);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+    border: 1px solid rgba(167,243,208,.8); /* emerald-200/80 */
+    padding: 2rem;
+  }
+  @media (min-width: 768px) { .card { padding: 3rem; } }
+  .blobs { position: absolute; inset: 0; border-radius: 1.5rem; overflow: hidden; pointer-events: none; }
+  .blobs::before, .blobs::after { content: ''; position: absolute; border-radius: 50%; filter: blur(48px); }
+  .blobs::before { top: 0; right: 0; width: 24rem; height: 24rem; background: rgba(209,250,229,.4); transform: translate(33%,-33%); }
+  .blobs::after { bottom: 0; left: 0; width: 20rem; height: 20rem; background: rgba(254,243,199,.4); transform: translate(-33%,33%); }
+  .card > * { position: relative; }
+
+  /* ─── الدمغة والترويسة الرسمية ─── */
+  .head { border-bottom: 1px solid #d1fae5; padding-bottom: 1.5rem; margin-bottom: 2rem; text-align: center; }
+  .seal { position: relative; display: inline-block; margin-bottom: .75rem; }
+  .seal .disc {
+    width: 7rem; height: 7rem; border-radius: 50%;
+    border: 4px solid rgba(245,158,11,.8);
+    background: linear-gradient(135deg, #065f46, #047857, #134e4a);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,.2); color: #fff;
+  }
+  .seal .disc .inner {
+    width: 4rem; height: 4rem; border-radius: 50%;
+    border: 1px solid rgba(252,211,77,.4);
+    display: grid; place-items: center; background: rgba(2,44,34,.4);
+  }
+  .seal .disc .inner svg { width: 2rem; height: 2rem; color: #fbbf24; }
+  .seal .ribbon {
+    position: absolute; bottom: -.5rem; right: 50%; transform: translateX(50%);
+    background: #f59e0b; color: #020617; font-size: 11px; font-weight: 900;
+    padding: 2px .75rem; border-radius: 999px; white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,.2); border: 1px solid #fde68a;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .seal .ribbon svg { width: .875rem; height: .875rem; }
+  .head .republic-line { font-size: .875rem; font-weight: 700; color: #334155; letter-spacing: .025em; margin-bottom: .25rem; }
+  .head .ministry-line { font-size: .8rem; font-weight: 600; color: #065f46; margin-bottom: .5rem; }
+  .pills { display: flex; align-items: center; justify-content: center; gap: .75rem; flex-wrap: wrap; font-size: .8rem; color: #475569; font-weight: 500; }
+  .pill {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: #f1f5f9; padding: .25rem .75rem; border-radius: 999px; border: 1px solid #e2e8f0;
+  }
+  .pill svg { width: .875rem; height: .875rem; color: #047857; }
+  .pill b { color: #065f46; }
+  .head h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900; color: #0f172a; margin-top: 1rem; letter-spacing: -.025em; }
+  .head .tagline { font-size: .9rem; color: #64748b; max-width: 42rem; margin: .5rem auto 0; line-height: 1.8; }
+  @media (min-width: 768px) { .head .tagline { font-size: 1.05rem; } }
+
+  /* ─── كادر الإحصاء الداكن ─── */
+  .cadre-wrap {
+    border-radius: 1rem; padding: 4px; margin-bottom: 2rem;
+    background: linear-gradient(90deg, #f59e0b, #059669, #f59e0b);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,.2);
+  }
+  .cadre {
+    position: relative; overflow: hidden; border-radius: 14px; color: #fff;
+    background: linear-gradient(180deg, #0f172a, #022c22, #0f172a);
+    padding: 1.5rem;
+  }
+  @media (min-width: 768px) { .cadre { padding: 2rem; } }
+  .cadre .corner { position: absolute; color: rgba(251,191,36,.3); font-size: .75rem; user-select: none; font-family: monospace; }
+  .cadre .corner.tr { top: .5rem; right: .5rem; }
+  .cadre .corner.bl { bottom: .5rem; left: .5rem; }
+  .cadre .row { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 1.5rem; }
+  @media (min-width: 768px) { .cadre .row { flex-direction: row; } }
+  .cadre .main-stat { display: flex; align-items: center; gap: 1.25rem; text-align: center; }
+  @media (min-width: 768px) { .cadre .main-stat { text-align: right; } }
+  .cadre .cube {
+    width: 4.5rem; height: 4.5rem; flex-shrink: 0; border-radius: 1rem;
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    display: grid; place-items: center;
+    box-shadow: 0 10px 15px -3px rgba(245,158,11,.2);
+  }
+  .cadre .cube svg { width: 2.25rem; height: 2.25rem; color: #020617; }
+  .cadre .chip {
+    display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .05em;
+    color: #fbbf24; background: rgba(251,191,36,.1);
+    padding: 2px .625rem; border-radius: 999px; border: 1px solid rgba(251,191,36,.2);
+  }
+  .cadre .big {
+    font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; color: #fff; margin-top: .25rem; letter-spacing: -.025em;
+  }
+  .cadre .big span { font-size: 1.125rem; font-weight: 700; color: #fbbf24; margin-right: .5rem; }
+  @media (min-width: 768px) { .cadre .big span { font-size: 1.5rem; } }
+  .cadre .hint { font-size: .8rem; color: rgba(167,243,208,.8); margin-top: .25rem; }
+  .cadre .subs {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; width: 100%;
+    border-top: 1px solid rgba(6,95,70,.8); padding-top: 1rem;
+  }
+  @media (min-width: 768px) {
+    .cadre .subs { grid-template-columns: repeat(3, 1fr); width: auto; border-top: 0; border-right: 1px solid rgba(6,95,70,.8); padding-top: 0; padding-right: 1.5rem; }
+  }
+  .cadre .sub {
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    border-radius: .75rem; padding: .75rem; text-align: center;
+  }
+  .cadre .sub .lbl { display: flex; align-items: center; justify-content: center; gap: .25rem; font-size: .75rem; color: #6ee7b7; margin-bottom: .25rem; }
+  .cadre .sub .lbl svg { width: .875rem; height: .875rem; }
+  .cadre .sub .val { font-size: 1.125rem; font-weight: 700; color: #fff; }
+  .cadre .sub .val.gold { color: #fcd34d; }
+  .cadre .sub .cap { font-size: 10px; color: #94a3b8; }
+  .cadre .foot-note {
+    margin-top: 1rem; padding-top: .75rem; border-top: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+    font-size: 11px; color: #cbd5e1;
+  }
+  .cadre .foot-note .a { display: inline-flex; align-items: center; gap: .375rem; color: #fcd34d; }
+  .cadre .foot-note .b { display: inline-flex; align-items: center; gap: .375rem; color: #34d399; }
+  .cadre .foot-note svg { width: .875rem; height: .875rem; }
+
+  /* ─── أزرار الدخول الكبيرة ─── */
+  .entries { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  @media (min-width: 768px) { .entries { grid-template-columns: repeat(2, 1fr); } }
+  a.entry {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem;
+    min-height: 220px; padding: 2rem; border-radius: 1.5rem;
+    text-decoration: none; text-align: center; position: relative;
+    transition: transform .2s ease, filter .2s ease;
+  }
+  a.entry:hover { transform: scale(1.02); filter: brightness(1.06); }
+  a.entry:active { transform: scale(.95); }
+  .entry.emerald {
+    background: linear-gradient(135deg, #059669, #047857, #115e59);
+    border: 2px solid rgba(16,185,129,.5); color: #fff;
+    box-shadow: 0 20px 25px -5px rgba(4,120,87,.3);
+  }
+  .entry.emerald:hover { background: linear-gradient(135deg, #047857, #115e59, #134e4a); }
+  .entry.amber {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b, #ea580c);
+    border: 2px solid rgba(252,211,77,.7); color: #020617;
+    box-shadow: 0 20px 25px -5px rgba(245,158,11,.3);
+  }
+  .entry.amber:hover { background: linear-gradient(135deg, #f59e0b, #ea580c, #c2410c); }
+  .entry.teal {
+    background: linear-gradient(135deg, #0d9488, #0e7490, #0c4a6e);
+    border: 2px solid rgba(45,212,191,.5); color: #fff;
+    box-shadow: 0 20px 25px -5px rgba(14,116,144,.3);
+  }
+  .entry.teal:hover { background: linear-gradient(135deg, #0f766e, #155e75, #082f49); }
+  .entry.indigo {
+    background: linear-gradient(135deg, #4f46e5, #4338ca, #1e3a8a);
+    border: 2px solid rgba(129,140,248,.5); color: #fff;
+    box-shadow: 0 20px 25px -5px rgba(67,56,202,.3);
+  }
+  .entry.indigo:hover { background: linear-gradient(135deg, #4338ca, #3730a3, #172554); }
+  .entry.indigo .desc { color: #e0e7ff; }
+  .entry .ibox {
+    width: 5.5rem; height: 5.5rem; border-radius: 1.5rem;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
+  }
+  .entry.amber .ibox { background: rgba(2,6,23,.1); border-color: rgba(2,6,23,.15); }
+  .entry .ibox svg { width: 3rem; height: 3rem; }
+  .entry .name { font-size: 1.5rem; font-weight: 900; }
+  @media (min-width: 768px) { .entry .name { font-size: 1.875rem; } }
+  .entry .desc { font-size: .85rem; font-weight: 500; line-height: 1.7; }
+  .entry.emerald .desc { color: #d1fae5; }
+  .entry.amber .desc { color: #1e293b; }
+  .entry.teal .desc { color: #cffafe; }
+  .entry .go {
+    margin-top: .25rem; display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.15); padding: .375rem 1rem; border-radius: 999px;
+    font-size: .875rem; font-weight: 700;
+  }
+  .entry.amber .go { background: rgba(2,6,23,.1); }
+  .entry .go svg { width: 1rem; height: 1rem; }
+  .entry .state {
+    position: absolute; top: .75rem; right: .75rem;
+    display: inline-flex; align-items: center; gap: .375rem;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+    color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px .625rem; border-radius: 999px;
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  }
+  .entry.amber .state { background: rgba(2,6,23,.12); border-color: rgba(2,6,23,.2); color: #020617; }
+  .entry .state .dot { width: .5rem; height: .5rem; border-radius: 50%; background: #94a3b8; }
+  .entry .state.on .dot { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+  .entry .state.off .dot { background: #f87171; box-shadow: 0 0 8px #f87171; }
+
+  /* ─── وضع الإصلاح ─── */
+  .entry.maint {
+    box-shadow:
+      0 0 0 3px rgba(220,38,38,.65),
+      0 20px 25px -5px rgba(0,0,0,.25);
+  }
+  .state.maint {
+    border-color: rgba(248,113,113,.85) !important;
+    background: rgba(127,29,29,.6);
+    color: #fecaca !important;
+  }
+  .state.maint .dot {
+    background: #ef4444;
+    box-shadow: 0 0 9px #ef4444;
+    animation: pulse 1s infinite;
+  }
+
+  /* لوحة وضع الإصلاح */
+  .maint-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(15,23,42,.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    padding: 1rem;
+  }
+  .maint-overlay.open { display: flex; }
+  .maint-panel {
+    background: #fff; width: 100%; max-width: 480px;
+    border-radius: 1.5rem; border: 1px solid #a7f3d0;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,.35);
+    overflow: hidden;
+  }
+  .maint-head {
+    background: linear-gradient(90deg, #064e3b, #065f46, #134e4a);
+    color: #fff; border-bottom: 3px solid #f59e0b;
+    padding: .9rem 1.25rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .maint-head h3 { font-size: 1.05rem; font-weight: 700; }
+  .maint-close {
+    background: rgba(255,255,255,.15); border: 0; color: #fff;
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; font-size: 14px; line-height: 1;
+  }
+  .maint-close:hover { background: rgba(255,255,255,.3); }
+  .maint-body { padding: 1rem 1.25rem 1.15rem; display: flex; flex-direction: column; gap: .55rem; }
+  .maint-row {
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: .9rem; padding: .5rem .85rem;
+  }
+  .maint-row .lbl {
+    display: flex; align-items: center; gap: .6rem;
+    font-weight: 700; color: #1e293b; font-size: .95rem;
+  }
+  .maint-row .lbl .ic {
+    width: 30px; height: 30px; border-radius: .6rem;
+    display: grid; place-items: center; color: #fff; flex-shrink: 0;
+  }
+  .maint-row .lbl .ic svg { width: 16px; height: 16px; }
+  .sw { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .sw input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 2; }
+  .sw .tr { position: absolute; inset: 0; background: #cbd5e1; border-radius: 999px; transition: background .2s; }
+  .sw .tr::after {
+    content: ''; position: absolute; top: 3px; right: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    transition: transform .2s;
+  }
+  .sw input:checked + .tr { background: #dc2626; }
+  .sw input:checked + .tr::after { transform: translateX(-20px); }
+  .maint-note { font-size: .75rem; color: #64748b; line-height: 1.8; margin-top: .3rem; }
+
+  /* ─── التذييل ─── */
+  footer {
+    text-align: center; font-size: .75rem; color: #64748b;
+    padding: 1rem 1rem; background: rgba(255,255,255,.8);
+    border-top: 1px solid #e2e8f0;
+  }
+</style>
+</head>
+<body>
+
+<!-- اللافتة العلوية -->
+<div class="banner">
+  <div class="container">
+    <div class="live">
+      <div class="dz-ball" aria-hidden="true">
+        <div class="dz-ball-spin">
+          <div class="dz-flag">
+            <svg viewBox="0 0 100 100">
+              <path fill="#d21034" fill-rule="evenodd" d="M50,24 a26,26 0 1,0 0,52 a26,26 0 1,0 0,-52 z M57,29 a21,21 0 1,0 0,42 a21,21 0 1,0 0,-42 z"/>
+              <polygon fill="#d21034" points="58,39 60.65,46.36 68.46,46.6 62.28,51.39 64.47,58.9 58,54.5 51.53,58.9 53.72,51.39 47.54,46.6 55.35,46.36"/>
+            </svg>
+          </div>
+        </div>
+        <div class="dz-shade"></div>
+      </div>
+      <span class="pulse"></span>
+      <span>بوابة المصالح الاقتصادية للمؤسسة التربوية</span>
+    </div>
+    <div class="republic">
+      <span>الجمهورية الجزائرية الديمقراطية الشعبية</span>
+      <span>•</span>
+      <span>وزارة التربية الوطنية</span>
+    </div>
+  </div>
+</div>
+
+<!-- البطاقة الرئيسية -->
+<div class="stage">
+  <main class="card">
+    <div class="blobs"></div>
+
+    <!-- الدمغة والترويسة -->
+    <div class="head">
+      <div class="seal">
+        <div class="disc">
+          <div class="inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+          </div>
+        </div>
+        <span class="ribbon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          المصالح الاقتصادية
+        </span>
+      </div>
+      <h2 class="republic-line">الجمهورية الجزائرية الديمقراطية الشعبية</h2>
+      <h3 class="ministry-line">وزارة التربية الوطنية</h3>
+      <div class="pills">
+        <span class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          ولاية: <b>باتنة</b>
+        </span>
+        <span class="pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+          المؤسسة: <b>ثانوية وادي الماء</b>
+        </span>
+      </div>
+      <h1>بوابة المصالح الاقتصادية</h1>
+      <p class="tagline">المنفذ الموحّد لمصالح الاقتصاد والتسيير المالي والمادي: التقارير اليومية، الرواتب والتقاعد، الاستشارة، ونظام الجرد</p>
+    </div>
+
+    <!-- كادر الإحصاء -->
+    <div class="cadre-wrap">
+      <div class="cadre">
+        <div class="corner tr">❖ ❖ ❖</div>
+        <div class="corner bl">❖ ❖ ❖</div>
+        <div class="row">
+          <div class="main-stat">
+            <div class="cube">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </div>
+            <div>
+              <span class="chip">إحصاء البوابة</span>
+              <div class="big"><span id="apps-count">4</span> تطبيقات موحّدة</div>
+              <p class="hint">وصول سريع من مكان واحد دون تذكّر الروابط</p>
+            </div>
+          </div>
+          <div class="subs">
+            <div class="sub">
+              <div class="lbl">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                <span>عبر الأنترنت</span>
+              </div>
+              <div class="val" id="stat-online">4</div>
+              <div class="cap">تطبيق منشور</div>
+            </div>
+            <div class="sub">
+              <div class="lbl">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+                <span>محلية</span>
+              </div>
+              <div class="val" id="stat-local">0</div>
+              <div class="cap">تعمل داخل المؤسسة</div>
+            </div>
+            <div class="sub">
+              <div class="lbl">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                <span>السنة المالية</span>
+              </div>
+              <div class="val gold">2025/2026</div>
+              <div class="cap">الموسم الدراسي الجاري</div>
+            </div>
+          </div>
+        </div>
+        <div class="foot-note">
+          <span class="a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            حالة كل تطبيق تُفحص تلقائياً عند فتح البوابة
+          </span>
+          <span class="b">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+            آخر تحديث: 2026-10-05
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- أزرار الدخول -->
+    <div class="entries" id="entries"></div>
+  </main>
+</div>
+
+<footer>
+  بوابة المصالح الاقتصادية — service.intendance — 2025/2026
+</footer>
+
+<!-- لوحة وضع الإصلاح (تُفتح بنقرة مزدوجة على كرة العلم) -->
+<div class="maint-overlay" id="maint-overlay">
+  <div class="maint-panel">
+    <div class="maint-head">
+      <h3>🔧 وضع الإصلاح</h3>
+      <button class="maint-close" id="maint-close" title="إغلاق">✕</button>
+    </div>
+    <div class="maint-body" id="maint-body"></div>
+  </div>
+</div>
+
+<script>
+// لإضافة تطبيق جديد مستقبلاً: أضف سطراً واحداً هنا
+const SITES = [
+  {
+    theme: 'emerald',
+    icon: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+    name: 'التقرير اليومي',
+    desc: 'التقارير اليومية والوثائق الإدارية لمصلحة التسيير المالي والمادي',
+    url: 'https://service-rapport.pages.dev',
+    go: 'فتح التقارير',
+    check: true,
+  },
+  {
+    theme: 'amber',
+    icon: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/>',
+    name: 'الرواتب والتقاعد',
+    desc: 'رواتب موظفي الوظيفة العمومية والتربية، كشوف الأجور ووثائق التقاعد CNR',
+    url: 'https://service-paie.pages.dev',
+    go: 'فتح النظام',
+    check: true,
+  },
+  {
+    theme: 'teal',
+    icon: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+    name: 'برنامج الاستشارة',
+    desc: 'استشارة تموين المطعم المدرسي وإصدار وثائقها للطباعة',
+    url: 'https://service-soumission.pages.dev',
+    go: 'فتح البرنامج',
+    check: true,
+  },
+  {
+    theme: 'indigo',
+    icon: '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+    name: 'نظام الجرد',
+    desc: 'الجرد العام للممتلكات والتجهيزات، جرد المكتبة، بطاقات المحلات ومقررات التحويل',
+    url: 'https://service-invantaire.pages.dev',
+    go: 'فتح السجل',
+    check: true,
+  },
+];
+
+const svg = (inner) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+
+const arrowLeft = svg('<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>');
+
+document.getElementById('entries').innerHTML = SITES.map((s, i) => `
+  <a class="entry ${s.theme}" id="entry${i}" href="${s.url}" target="_blank" rel="noopener">
+    <span class="state" id="st${i}"><span class="dot"></span><span class="txt">جارٍ الفحص…</span></span>
+    <span class="ibox">${svg(s.icon)}</span>
+    <span class="name">${s.name}</span>
+    <span class="desc">${s.desc}</span>
+    <span class="go">${s.go}${arrowLeft}</span>
+  </a>
+`).join('');
+
+// الإحصاءات تُحسب تلقائياً من المصفوفة
+document.getElementById('apps-count').textContent = SITES.length;
+document.getElementById('stat-online').textContent = SITES.filter(s => s.url.startsWith('https:')).length;
+document.getElementById('stat-local').textContent = SITES.filter(s => s.url.startsWith('http:')).length;
+
+// فحص التوفر تلقائياً مع إعادة محاولة واحدة قبل إعلان «متوقف»
+SITES.forEach((s, i) => {
+  if (!s.check) return;
+  const el = document.getElementById('st' + i);
+  const probe = (delay) => new Promise((resolve, reject) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 3000);
+    setTimeout(() => {
+      fetch(s.url, { mode: 'no-cors', cache: 'no-store', signal: ctrl.signal })
+        .then(() => { clearTimeout(timer); resolve(); })
+        .catch((e) => { clearTimeout(timer); reject(e); });
+    }, delay);
+  });
+  probe(0)
+    .catch(() => probe(1500))
+    .then(() => { if (isMaint(s.url)) return; el.classList.add('on'); el.querySelector('.txt').textContent = 'يعمل الآن'; })
+    .catch(() => { if (isMaint(s.url)) return; el.classList.add('off'); el.querySelector('.txt').textContent = 'متوقف'; });
+});
+
+// ===== وضع الإصلاح: شارة «جاري إصلاح التطبيق» تظهر عند العمل على تطبيق وتختفي تمامًا عند الانتهاء =====
+// اللوحة تُفتح بنقرة مزدوجة على كرة العلم في الشريط العلوي، والإعداد محفوظ في هذا المتصفح
+const MAINT_KEY = 'portalEcoMaintenanceV1';
+const getMaint = () => { try { return JSON.parse(localStorage.getItem(MAINT_KEY)) || {}; } catch (e) { return {}; } };
+const isMaint = (url) => !!getMaint()[url];
+
+function setMaint(url, val) {
+  const m = getMaint();
+  if (val) m[url] = true; else delete m[url];
+  try { localStorage.setItem(MAINT_KEY, JSON.stringify(m)); } catch (e) {}
+  applyMaintenance();
+}
+
+function applyMaintenance() {
+  const m = getMaint();
+  SITES.forEach((s, i) => {
+    const card = document.getElementById('entry' + i);
+    const pill = document.getElementById('st' + i);
+    if (!card || !pill) return;
+    const on = !!m[s.url];
+    card.classList.toggle('maint', on);
+    pill.classList.toggle('maint', on);
+    if (on) {
+      pill.querySelector('.txt').textContent = 'جاري إصلاح التطبيق';
+    } else if (!pill.classList.contains('on') && !pill.classList.contains('off')) {
+      pill.querySelector('.txt').textContent = 'جارٍ الفحص…';
+    }
+  });
+}
+
+const THEME_COLORS = { emerald: '#059669', amber: '#d97706', teal: '#0e7490', indigo: '#4f46e5', rose: '#e11d48', violet: '#7c3aed' };
+
+function buildMaintPanel() {
+  const rows = SITES.map((s, i) => `
+    <div class="maint-row">
+      <span class="lbl">
+        <span class="ic" style="background:${THEME_COLORS[s.theme] || '#475569'}">${svg(s.icon)}</span>
+        ${s.name}
+      </span>
+      <label class="sw">
+        <input type="checkbox" ${isMaint(s.url) ? 'checked' : ''} onchange="setMaint('${s.url}', this.checked)">
+        <span class="tr"></span>
+      </label>
+    </div>`).join('');
+  document.getElementById('maint-body').innerHTML = rows + `
+    <p class="maint-note">فعّل المفتاح وأنت تعمل على التطبيق فتظهر على بطاقته شارة «جاري إصلاح التطبيق» بالنقطة الحمراء، وأطفئه بعد الانتهاء فتختفي الملاحظة تمامًا. الإعداد محفوظ في هذا المتصفح، واللوحة تُفتح بنقرة مزدوجة على كرة العلم.</p>`;
+}
+
+const maintOverlay = document.getElementById('maint-overlay');
+function openMaintPanel() { buildMaintPanel(); maintOverlay.classList.add('open'); }
+function closeMaintPanel() { maintOverlay.classList.remove('open'); }
+window.setMaint = setMaint;
+window.openMaintPanel = openMaintPanel;
+document.getElementById('maint-close').addEventListener('click', closeMaintPanel);
+maintOverlay.addEventListener('click', (e) => { if (e.target === maintOverlay) closeMaintPanel(); });
+
+const dzBall = document.querySelector('.dz-ball');
+dzBall.title = 'نقرة مزدوجة: لوحة وضع الإصلاح';
+dzBall.addEventListener('dblclick', openMaintPanel);
+
+applyMaintenance();
+</script>
+</body>
+</html>
