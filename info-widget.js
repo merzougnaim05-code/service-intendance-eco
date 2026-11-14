@@ -195,18 +195,31 @@
     var info = collect();
     var mecano = String(info.mecano || '').trim().toLowerCase().replace(/\s+/g, '-');
     if (!mecano) { say('أدخل الرقم الميكانوغرافي — هو مفتاح المؤسسة', false); return; }
+    // رمز هذا المتصفح: يُولَّد آليًا مرة واحدة — أول من يرفع سجلًا جديدًا يملكه
     var token = tokenInput.value.trim() || getLS(LS_TOKEN) || '';
-    if (!token) { say('أدخل توكن الرفع في الأسفل ثم اضغط حفظ', false); return; }
-    setLS(LS_TOKEN, token);
+    if (!token) {
+      token = '';
+      try {
+        var arr = new Uint8Array(24);
+        crypto.getRandomValues(arr);
+        token = btoa(String.fromCharCode.apply(null, arr)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+      } catch (e) { token = 'tk' + Date.now().toString(36); }
+      setLS(LS_TOKEN, token);
+      tokenInput.value = token;
+    }
     say('جارٍ الرفع…', true);
     fetch(HUB + '/api/info/' + encodeURIComponent(mecano) + '?by=' + encodeURIComponent('البوابة'), {
       method: 'PUT',
       headers: { 'X-Hub-Token': token, 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
     })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (!j.ok) throw new Error(j.error || 'فشل الرفع');
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+      .then(function (res) {
+        var j = res.j;
+        if (!j.ok) {
+          if (res.status === 403) { say('✗ ' + (j.error || 'السجل مملوك لمؤسسة أخرى') + ' — إن كنت مدير المركز أدخل توكن المدير', false); return; }
+          throw new Error(j.error || 'فشل الرفع');
+        }
         setLS(LS_INFO, JSON.stringify(info));
         setLS(LS_MECANO, mecano);
         setLS(LS_UPDATED, j.updatedAt);
