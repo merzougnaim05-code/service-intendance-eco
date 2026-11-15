@@ -11,7 +11,6 @@
   var LS_INFO = 'instInfoV1';
   var LS_MECANO = 'instInfoMecanoV1';
   var LS_UPDATED = 'instInfoUpdatedAtV1';
-  var LS_TOKEN = 'infoHubTokenV1';
 
   var FIELDS = [
     { key: 'institution', label: 'اسم المؤسسة' },
@@ -87,11 +86,6 @@
     '.iih-up:hover{background:#fbbf24}' +
     '.iih-dl{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}' +
     '.iih-dl:hover{background:#dbeafe}' +
-    '.iih-meta{font-size:11px;color:#94a3b8;margin-top:.5rem}' +
-    '.iih-tk{border-top:1px dashed #cbd5e1;background:#f0fdf4;padding:.7rem 1.15rem .8rem;flex-shrink:0}' +
-    '.iih-tk label{display:flex;align-items:center;gap:.5rem;font-size:11px;font-weight:700;color:#334155;flex-wrap:wrap}' +
-    '.iih-tk input{flex:1;min-width:130px;border:1px solid #cbd5e1;border-radius:.5rem;padding:.35rem .6rem;font-family:inherit;font-size:12px;direction:ltr;text-align:left}' +
-    '.iih-tk button{border:0;background:#059669;color:#fff;border-radius:.5rem;padding:.35rem .8rem;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}';
   document.head.appendChild(st);
 
   /* زر الشريط العلوي */
@@ -122,25 +116,19 @@
         '</div>';
     }).join('') +
     '</div>' +
-    '<p class="iih-note">احفظ محليًا ثم ارفع إلى المركز — التطبيقات تسحب المعطيات بمفتاح <b>الرقم الميكانوغرافي</b>، وكل مؤسسة بسجلها المنفصل. الرقم الميكانوغرافي إلزامي للرفع والتحميل.</p>' +
+    '<p class="iih-note">اضغط «حفظ ونشر» — تُحفظ المعطيات في هذا المتصفح وتُنشر للمركز بمفتاح <b>الرقم الميكانوغرافي</b> فتظهر في كل أجهزة المؤسسة، وكل مؤسسة بسجلها المنفصل. الرقم الميكانوغرافي إلزامي.</p>' +
     '<div class="iih-acts">' +
-    '<button class="iih-save" id="iih-local">💾 حفظ محليًا</button>' +
-    '<button class="iih-up" id="iih-push">☁ رفع إلى المركز</button>' +
+    '<button class="iih-save" id="iih-save">💾 حفظ ونشر</button>' +
     '<button class="iih-dl" id="iih-pull">⬇ تحميل من المركز</button>' +
     '</div>' +
     '<div class="iih-meta" id="iih-meta"></div>' +
     '<div class="iih-msg" id="iih-msg"></div>' +
-    '</div>' +
-    '<div class="iih-tk"><label>🔑 توكن الرفع (يُحفظ في هذا المتصفح):' +
-    '<input type="password" id="iih-token" placeholder="INFO_HUB_TOKEN">' +
-    '<button id="iih-save-tk">حفظ</button></label>' +
     '</div>' +
     '</div>';
   document.body.appendChild(ov);
 
   var msg = ov.querySelector('#iih-msg');
   var meta = ov.querySelector('#iih-meta');
-  var tokenInput = ov.querySelector('#iih-token');
   var dot = document.getElementById('iih-dot');
 
   function say(text, ok) {
@@ -173,61 +161,34 @@
   }
 
   function openPanel() {
-    tokenInput.value = getLS(LS_TOKEN) || '';
     fill(getInfo());
     refreshMeta();
     refreshDot();
     ov.classList.add('open');
   }
 
-  /* حفظ محلي */
-  ov.querySelector('#iih-local').addEventListener('click', function () {
-    var info = collect();
-    if (!String(info.mecano || '').trim()) { say('أدخل الرقم الميكانوغرافي أولًا — هو مفتاح المؤسسة في المركز', false); return; }
-    setLS(LS_INFO, JSON.stringify(info));
-    setLS(LS_MECANO, String(info.mecano).trim().toLowerCase().replace(/\s+/g, '-'));
-    refreshMeta();
-    say('✓ حُفظت المعطيات محليًا في هذا المتصفح', true);
-  });
-
-  /* رفع إلى المركز */
-  ov.querySelector('#iih-push').addEventListener('click', function () {
+  /* حفظ ونشر تلقائي */
+  ov.querySelector('#iih-save').addEventListener('click', function () {
     var info = collect();
     var mecano = String(info.mecano || '').trim().toLowerCase().replace(/\s+/g, '-');
-    if (!mecano) { say('أدخل الرقم الميكانوغرافي — هو مفتاح المؤسسة', false); return; }
-    // رمز هذا المتصفح: يُولَّد آليًا مرة واحدة — أول من يرفع سجلًا جديدًا يملكه
-    var token = tokenInput.value.trim() || getLS(LS_TOKEN) || '';
-    if (!token) {
-      token = '';
-      try {
-        var arr = new Uint8Array(24);
-        crypto.getRandomValues(arr);
-        token = btoa(String.fromCharCode.apply(null, arr)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
-      } catch (e) { token = 'tk' + Date.now().toString(36); }
-      setLS(LS_TOKEN, token);
-      tokenInput.value = token;
-    }
-    say('جارٍ الرفع…', true);
+    if (!mecano) { say('أدخل الرقم الميكانوغرافي أولًا — هو مفتاح المؤسسة في المركز', false); return; }
+    say('جارٍ الحفظ والنشر…', true);
     fetch(HUB + '/api/info/' + encodeURIComponent(mecano) + '?by=' + encodeURIComponent('البوابة'), {
       method: 'PUT',
-      headers: { 'X-Hub-Token': token, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(info),
     })
-      .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
-      .then(function (res) {
-        var j = res.j;
-        if (!j.ok) {
-          if (res.status === 403) { say('✗ ' + (j.error || 'السجل مملوك لمؤسسة أخرى') + ' — إن كنت مدير المركز أدخل توكن المدير', false); return; }
-          throw new Error(j.error || 'فشل الرفع');
-        }
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) throw new Error(j.error || 'فشل النشر');
         setLS(LS_INFO, JSON.stringify(info));
         setLS(LS_MECANO, mecano);
         setLS(LS_UPDATED, j.updatedAt);
         refreshMeta();
         refreshDot();
-        say('✓ رُفع سجل المؤسسة إلى المركز — التطبيقات ستعرضه عند التحميل', true);
+        say('✓ حُفظت المعطيات ونُشرت — كل أجهزة المؤسسة ستعرضها عند التحميل', true);
       })
-      .catch(function (e) { say('✗ ' + (e.message || 'تعذّر الرفع'), false); });
+      .catch(function (e) { say('✗ ' + (e.message || 'تعذّر النشر — تحقق من الأنترنت'), false); });
   });
 
   /* تحميل من المركز */
@@ -245,16 +206,9 @@
         setLS(LS_UPDATED, j.updatedAt || '');
         refreshMeta();
         refreshDot();
-        say('✓ جُلب سجل المؤسسة (' + (j.info.institution || mecano) + ') — اضغط حفظ محليًا إن أردت تثبيته', true);
+        say('✓ جُلب سجل المؤسسة (' + (j.info.institution || mecano) + ')', true);
       })
       .catch(function (e) { say('✗ ' + (e.message || 'تعذّر الجلب'), false); });
-  });
-
-  ov.querySelector('#iih-save-tk').addEventListener('click', function () {
-    var t = tokenInput.value.trim();
-    if (!t) { say('اكتب التوكن أولًا', false); return; }
-    setLS(LS_TOKEN, t);
-    say('✓ حُفظ التوكن في هذا المتصفح', true);
   });
 
   ov.querySelector('.iih-x').addEventListener('click', function () { ov.classList.remove('open'); });
