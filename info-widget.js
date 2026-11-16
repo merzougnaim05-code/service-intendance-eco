@@ -216,7 +216,39 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectButton);
   else injectButton();
+
+  /* مزامنة تلقائية عند فتح البوابة:
+     - إن كان الرقم الميكانوغرافي محفوظًا: جلب آخر معطيات من المركز وتحديث النسخة المحلية بصمت
+     - وإلا وُجدت مؤسسة واحدة فقط في المركز: تُتبنى آليًا (قبل تسجيل مؤسسات أخرى) */
+  function autoSync() {
+    var mecano = getMecano();
+    if (mecano) { syncFromHub(mecano); return; }
+    fetch(HUB + '/api/orgs', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok || !j.orgs || j.orgs.length !== 1) return;
+        var m = String(j.orgs[0].mecano || '').toLowerCase().replace(/s+/g, '-');
+        if (!/^[a-z0-9._-]{3,32}$/.test(m)) return;
+        setLS(LS_MECANO, m);
+        syncFromHub(m);
+      })
+      .catch(function () { /* اختياري */ });
+  }
+  function syncFromHub(mecano) {
+    fetch(HUB + '/api/info/' + encodeURIComponent(mecano), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.ok || !j.info) return;
+        setLS(LS_INFO, JSON.stringify(j.info));
+        setLS(LS_UPDATED, j.updatedAt || '');
+        refreshDot();
+      })
+      .catch(function () { /* اختياري */ });
+  }
+
   if (getMecano()) refreshDot();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoSync);
+  else autoSync();
 
   window.InstitutionInfo = { open: openPanel };
 })();
