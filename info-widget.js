@@ -47,27 +47,6 @@
   var st = document.createElement('style');
   st.textContent =
     '.iih{font-family:"IBM Plex Sans Arabic","Cairo",Tahoma,sans-serif;direction:rtl}' +
-    /* البطاقة الكبيرة — بنفس لغة أزرار الدخول */
-    '.iih-card{grid-column:1/-1;display:flex;align-items:center;gap:1.25rem;min-height:150px;padding:1.75rem 2rem;border-radius:1.5rem;' +
-    'cursor:pointer;text-align:right;position:relative;grid-column:1/-1;' +
-    'background:linear-gradient(135deg,#064e3b,#065f46 45%,#134e4a);border:2px solid rgba(252,211,77,.7);color:#fff;' +
-    'box-shadow:0 20px 25px -5px rgba(6,78,59,.35);transition:transform .2s ease,filter .2s ease}' +
-    '.iih-card:hover{transform:scale(1.01);filter:brightness(1.08)}' +
-    '.iih-card:active{transform:scale(.98)}' +
-    '.iih-card .ibox{width:5rem;height:5rem;flex-shrink:0;border-radius:1.5rem;display:grid;place-items:center;' +
-    'background:rgba(255,255,255,.12);border:1px solid rgba(252,211,77,.5);box-shadow:inset 0 2px 4px rgba(0,0,0,.1)}' +
-    '.iih-card .ibox svg{width:2.6rem;height:2.6rem;color:#fbbf24}' +
-    '.iih-card .tx{flex:1;min-width:0}' +
-    '.iih-card .nm{font-size:1.6rem;font-weight:900;display:flex;align-items:center;gap:.6rem}' +
-    '.iih-card .ds{font-size:.85rem;font-weight:500;line-height:1.8;color:#d1fae5;margin-top:.25rem}' +
-    '.iih-card .mt{font-size:11px;font-weight:700;color:#fcd34d;margin-top:.4rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}' +
-    '.iih-card .go{flex-shrink:0;display:inline-flex;align-items:center;gap:.5rem;background:rgba(251,191,36,.9);color:#020617;' +
-    'padding:.5rem 1.1rem;border-radius:999px;font-size:.875rem;font-weight:800;border:1px solid #fde68a}' +
-    '.iih-card .dot{display:none;position:absolute;top:.9rem;left:.9rem;width:12px;height:12px;border-radius:50%;' +
-    'background:#ef4444;border:2px solid #fff;box-shadow:0 0 8px #ef4444}' +
-    '.iih-card .dot.on{display:block;animation:iihPulse 1.2s infinite}' +
-    '@media(max-width:640px){.iih-card{flex-direction:column;text-align:center;gap:.8rem;padding:1.5rem 1.25rem}' +
-    '.iih-card .tx{width:100%}.iih-card .nm{justify-content:center}.iih-card .mt{justify-content:center}}' +
     '.iih-dot{display:none;position:absolute;top:-4px;left:-4px;width:10px;height:10px;border-radius:50%;' +
     'background:#ef4444;border:2px solid #fff;box-shadow:0 0 6px #ef4444}' +
     '.iih-dot.on{display:block;animation:iihPulse 1.2s infinite}' +
@@ -105,40 +84,21 @@
     '.iih-dl:hover{background:#dbeafe}' +
   document.head.appendChild(st);
 
-  /* البطاقة الكبيرة — فوق بطاقات التطبيقات، نقطة تعبئة معطيات المؤسسة الوحيدة */
-  function injectCard() {
-    var grid = document.getElementById('entries');
-    if (!grid || document.getElementById('iih-card')) return;
-    var card = document.createElement('a');
-    card.id = 'iih-card';
-    card.className = 'iih-card iih';
-    card.href = 'javascript:void(0)';
-    card.title = 'اضغط لتعبئة معطيات المؤسسة الرسمية — تُنشر تلقائيًا لكل التطبيقات';
-    card.innerHTML =
-      '<span class="ibox">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-      '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>' +
-      '<path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>' +
-      '</svg></span>' +
-      '<span class="tx">' +
-      '<span class="nm">معلومات المؤسسة <span class="dot" id="iih-dot"></span></span>' +
-      '<span class="ds">الهوية الرسمية للمؤسسة: الولاية، المديرية، الدائرة، البلدية، الرقم الميكانوغرافي، رقم الحساب، رمز الآمر بالصرف، السنة الدراسية — اضغط، عبّئ، واحفظ لتُنشر تلقائيًا في كل التطبيقات والأجهزة.</span>' +
-      '<span class="mt" id="iih-card-meta"></span>' +
-      '</span>' +
-      '<span class="go">تعبئة المعلومات ←</span>';
-    grid.insertBefore(card, grid.firstChild);
-    refreshCardMeta();
-    card.addEventListener('click', openPanel);
+  /* زر معطيات المؤسسة داخل الكادر — مقابل «تطبيقات موحّدة» */
+  function bindStat() {
+    var el = document.getElementById('instInfoStat');
+    if (!el) return;
+    el.addEventListener('click', openPanel);
   }
 
-  function refreshCardMeta() {
-    var m = document.getElementById('iih-card-meta');
+  function refreshStatHint() {
+    var m = document.getElementById('instInfoStatHint');
     if (!m) return;
     var mecano = getMecano();
     var u = getUpdated();
     m.textContent = mecano
-      ? '🏛 المؤسسة الحالية: ' + mecano + (u ? ' — آخر نشر: ' + fmtWhen(u) : '')
-      : '🏛 لم تُعبّأ معطيات المؤسسة بعد — اضغط للبدء';
+      ? 'المؤسسة الحالية: ' + mecano + (u ? ' — آخر نشر: ' + fmtWhen(u) : '')
+      : 'اضغط لتعبئة الهوية الرسمية ونشرها لكل التطبيقات';
   }
 
   /* اللوحة */
@@ -206,7 +166,7 @@
     fill(getInfo());
     refreshMeta();
     refreshDot();
-    refreshCardMeta();
+    refreshStatHint();
     ov.classList.add('open');
   }
 
@@ -229,7 +189,7 @@
         setLS(LS_UPDATED, j.updatedAt);
         refreshMeta();
         refreshDot();
-    refreshCardMeta();
+    refreshStatHint();
         say('✓ حُفظت المعطيات ونُشرت — كل أجهزة المؤسسة ستعرضها عند التحميل', true);
       })
       .catch(function (e) { say('✗ ' + (e.message || 'تعذّر النشر — تحقق من الأنترنت'), false); });
@@ -250,7 +210,7 @@
         setLS(LS_UPDATED, j.updatedAt || '');
         refreshMeta();
         refreshDot();
-    refreshCardMeta();
+    refreshStatHint();
         say('✓ جُلب سجل المؤسسة (' + (j.info.institution || mecano) + ')', true);
       })
       .catch(function (e) { say('✗ ' + (e.message || 'تعذّر الجلب'), false); });
@@ -259,8 +219,8 @@
   ov.querySelector('.iih-x').addEventListener('click', function () { ov.classList.remove('open'); });
   ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('open'); });
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectCard);
-  else injectCard();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindStat);
+  else bindStat();
 
   /* مزامنة تلقائية عند فتح البوابة:
      - إن كان الرقم الميكانوغرافي محفوظًا: جلب آخر معطيات من المركز وتحديث النسخة المحلية بصمت
@@ -287,13 +247,13 @@
         setLS(LS_INFO, JSON.stringify(j.info));
         setLS(LS_UPDATED, j.updatedAt || '');
         refreshDot();
-    refreshCardMeta();
+    refreshStatHint();
       })
       .catch(function () { /* اختياري */ });
   }
 
   if (getMecano()) refreshDot();
-    refreshCardMeta();
+    refreshStatHint();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoSync);
   else autoSync();
 

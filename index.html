@@ -154,6 +154,11 @@
   .cadre .row { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 1.5rem; }
   @media (min-width: 768px) { .cadre .row { flex-direction: row; } }
   .cadre .main-stat { display: flex; align-items: center; gap: 1.25rem; text-align: center; }
+  .cadre .main-stat.stat-btn { cursor: pointer; border-radius: 1rem; transition: transform .2s ease, background .2s ease; padding: .5rem .75rem; margin: -.5rem -.75rem; }
+  .cadre .main-stat.stat-btn:hover { background: rgba(255,255,255,.06); transform: translateY(-2px); }
+  .cadre .main-stat.stat-btn:active { transform: scale(.97); }
+  .cadre .chip .iih-dot { position: static; display: none; width: 9px; height: 9px; margin-right: 4px; }
+  .cadre .chip .iih-dot.on { display: inline-block; animation: iihPulse 1.2s infinite; }
   @media (min-width: 768px) { .cadre .main-stat { text-align: right; } }
   .cadre .cube {
     width: 4.5rem; height: 4.5rem; flex-shrink: 0; border-radius: 1rem;
@@ -425,6 +430,16 @@
               <span class="chip">إحصاء البوابة</span>
               <div class="big"><span id="apps-count">4</span> تطبيقات موحّدة</div>
               <p class="hint">وصول سريع من مكان واحد دون تذكّر الروابط</p>
+            </div>
+          </div>
+          <div class="main-stat stat-btn" id="instInfoStat" title="اضغط لتعبئة معطيات المؤسسة الرسمية ونشرها لكل التطبيقات">
+            <div class="cube">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+            </div>
+            <div>
+              <span class="chip">معطيات رسمية <span class="iih-dot" id="iih-dot"></span></span>
+              <div class="big">معلومات المؤسسة</div>
+              <p class="hint" id="instInfoStatHint">اضغط لتعبئة الهوية الرسمية ونشرها لكل التطبيقات</p>
             </div>
           </div>
           <div class="subs">
