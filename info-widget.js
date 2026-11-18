@@ -47,13 +47,30 @@
   var st = document.createElement('style');
   st.textContent =
     '.iih{font-family:"IBM Plex Sans Arabic","Cairo",Tahoma,sans-serif;direction:rtl}' +
-    '.iih-btn{background:rgba(251,191,36,.95);color:#020617;border:1px solid #fde68a;border-radius:999px;' +
-    'padding:4px 12px;font-family:inherit;font-size:.78rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px;' +
-    'box-shadow:0 2px 4px rgba(0,0,0,.25);position:relative}' +
-    '.iih-btn:hover{background:#fcd34d}' +
-    '.iih-btn .iih-dot{display:none;position:absolute;top:-4px;left:-4px;width:10px;height:10px;border-radius:50%;' +
+    /* البطاقة الكبيرة — بنفس لغة أزرار الدخول */
+    '.iih-card{grid-column:1/-1;display:flex;align-items:center;gap:1.25rem;min-height:150px;padding:1.75rem 2rem;border-radius:1.5rem;' +
+    'cursor:pointer;text-align:right;position:relative;grid-column:1/-1;' +
+    'background:linear-gradient(135deg,#064e3b,#065f46 45%,#134e4a);border:2px solid rgba(252,211,77,.7);color:#fff;' +
+    'box-shadow:0 20px 25px -5px rgba(6,78,59,.35);transition:transform .2s ease,filter .2s ease}' +
+    '.iih-card:hover{transform:scale(1.01);filter:brightness(1.08)}' +
+    '.iih-card:active{transform:scale(.98)}' +
+    '.iih-card .ibox{width:5rem;height:5rem;flex-shrink:0;border-radius:1.5rem;display:grid;place-items:center;' +
+    'background:rgba(255,255,255,.12);border:1px solid rgba(252,211,77,.5);box-shadow:inset 0 2px 4px rgba(0,0,0,.1)}' +
+    '.iih-card .ibox svg{width:2.6rem;height:2.6rem;color:#fbbf24}' +
+    '.iih-card .tx{flex:1;min-width:0}' +
+    '.iih-card .nm{font-size:1.6rem;font-weight:900;display:flex;align-items:center;gap:.6rem}' +
+    '.iih-card .ds{font-size:.85rem;font-weight:500;line-height:1.8;color:#d1fae5;margin-top:.25rem}' +
+    '.iih-card .mt{font-size:11px;font-weight:700;color:#fcd34d;margin-top:.4rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}' +
+    '.iih-card .go{flex-shrink:0;display:inline-flex;align-items:center;gap:.5rem;background:rgba(251,191,36,.9);color:#020617;' +
+    'padding:.5rem 1.1rem;border-radius:999px;font-size:.875rem;font-weight:800;border:1px solid #fde68a}' +
+    '.iih-card .dot{display:none;position:absolute;top:.9rem;left:.9rem;width:12px;height:12px;border-radius:50%;' +
+    'background:#ef4444;border:2px solid #fff;box-shadow:0 0 8px #ef4444}' +
+    '.iih-card .dot.on{display:block;animation:iihPulse 1.2s infinite}' +
+    '@media(max-width:640px){.iih-card{flex-direction:column;text-align:center;gap:.8rem;padding:1.5rem 1.25rem}' +
+    '.iih-card .tx{width:100%}.iih-card .nm{justify-content:center}.iih-card .mt{justify-content:center}}' +
+    '.iih-dot{display:none;position:absolute;top:-4px;left:-4px;width:10px;height:10px;border-radius:50%;' +
     'background:#ef4444;border:2px solid #fff;box-shadow:0 0 6px #ef4444}' +
-    '.iih-btn .iih-dot.on{display:block;animation:iihPulse 1.2s infinite}' +
+    '.iih-dot.on{display:block;animation:iihPulse 1.2s infinite}' +
     '@keyframes iihPulse{50%{opacity:.45}}' +
     '.iih-ov{position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);' +
     'display:none;align-items:center;justify-content:center;padding:1rem}' +
@@ -88,17 +105,39 @@
     '.iih-dl:hover{background:#dbeafe}' +
   document.head.appendChild(st);
 
-  /* زر الشريط العلوي */
-  function injectButton() {
-    var bar = document.querySelector('.banner .container');
-    if (!bar || document.getElementById('iih-open-btn')) return;
-    var b = document.createElement('button');
-    b.id = 'iih-open-btn';
-    b.className = 'iih-btn iih';
-    b.title = 'معطيات المؤسسة الرسمية — تُدخل مرة وتستعملها كل التطبيقات';
-    b.innerHTML = '🏛 معطيات المؤسسة <span class="iih-dot" id="iih-dot"></span>';
-    bar.appendChild(b);
-    b.addEventListener('click', openPanel);
+  /* البطاقة الكبيرة — فوق بطاقات التطبيقات، نقطة تعبئة معطيات المؤسسة الوحيدة */
+  function injectCard() {
+    var grid = document.getElementById('entries');
+    if (!grid || document.getElementById('iih-card')) return;
+    var card = document.createElement('a');
+    card.id = 'iih-card';
+    card.className = 'iih-card iih';
+    card.href = 'javascript:void(0)';
+    card.title = 'اضغط لتعبئة معطيات المؤسسة الرسمية — تُنشر تلقائيًا لكل التطبيقات';
+    card.innerHTML =
+      '<span class="ibox">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>' +
+      '<path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>' +
+      '</svg></span>' +
+      '<span class="tx">' +
+      '<span class="nm">معلومات المؤسسة <span class="dot" id="iih-dot"></span></span>' +
+      '<span class="ds">الهوية الرسمية للمؤسسة: الولاية، المديرية، الدائرة، البلدية، الرقم الميكانوغرافي، رقم الحساب، رمز الآمر بالصرف، السنة الدراسية — اضغط، عبّئ، واحفظ لتُنشر تلقائيًا في كل التطبيقات والأجهزة.</span>' +
+      '<span class="mt" id="iih-card-meta"></span>' +
+      '</span>' +
+      '<span class="go">تعبئة المعلومات ←</span>';
+    grid.insertBefore(card, grid.firstChild);
+    card.addEventListener('click', openPanel);
+  }
+
+  function refreshCardMeta() {
+    var m = document.getElementById('iih-card-meta');
+    if (!m) return;
+    var mecano = getMecano();
+    var u = getUpdated();
+    m.textContent = mecano
+      ? '🏛 المؤسسة الحالية: ' + mecano + (u ? ' — آخر نشر: ' + fmtWhen(u) : '')
+      : '🏛 لم تُعبّأ معطيات المؤسسة بعد — اضغط للبدء';
   }
 
   /* اللوحة */
@@ -129,8 +168,7 @@
 
   var msg = ov.querySelector('#iih-msg');
   var meta = ov.querySelector('#iih-meta');
-  var dot = document.getElementById('iih-dot');
-
+  
   function say(text, ok) {
     msg.textContent = text;
     msg.className = 'iih-msg ' + (ok ? 'ok' : 'err');
@@ -146,16 +184,19 @@
   }
   function refreshDot() {
     // نقطة حمراء إن وُجدت نسخة على المركز أحدث من آخر تطبيق محلي
+    var dot = document.getElementById('iih-dot');
     if (!dot) return;
     var mecano = getMecano();
-    if (!mecano) { dot.className = 'iih-dot'; return; }
+    if (!mecano) { var d0 = document.getElementById('iih-dot');
+      if (!d0) return;
+      d0.className = 'iih-dot'; return; }
     fetch(HUB + '/api/info/' + encodeURIComponent(mecano), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
         if (!j || !j.ok || !j.updatedAt) { dot.className = 'iih-dot'; return; }
         var mine = getUpdated();
         if (!mine || new Date(j.updatedAt) > new Date(mine)) dot.className = 'iih-dot on';
-        else dot.className = 'iih-dot';
+        else { var d1 = document.getElementById('iih-dot'); if (d1) d1.className = 'iih-dot'; }
       })
       .catch(function () { dot.className = 'iih-dot'; });
   }
@@ -164,6 +205,7 @@
     fill(getInfo());
     refreshMeta();
     refreshDot();
+    refreshCardMeta();
     ov.classList.add('open');
   }
 
@@ -186,6 +228,7 @@
         setLS(LS_UPDATED, j.updatedAt);
         refreshMeta();
         refreshDot();
+    refreshCardMeta();
         say('✓ حُفظت المعطيات ونُشرت — كل أجهزة المؤسسة ستعرضها عند التحميل', true);
       })
       .catch(function (e) { say('✗ ' + (e.message || 'تعذّر النشر — تحقق من الأنترنت'), false); });
@@ -206,6 +249,7 @@
         setLS(LS_UPDATED, j.updatedAt || '');
         refreshMeta();
         refreshDot();
+    refreshCardMeta();
         say('✓ جُلب سجل المؤسسة (' + (j.info.institution || mecano) + ')', true);
       })
       .catch(function (e) { say('✗ ' + (e.message || 'تعذّر الجلب'), false); });
@@ -214,8 +258,8 @@
   ov.querySelector('.iih-x').addEventListener('click', function () { ov.classList.remove('open'); });
   ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('open'); });
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectButton);
-  else injectButton();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectCard);
+  else injectCard();
 
   /* مزامنة تلقائية عند فتح البوابة:
      - إن كان الرقم الميكانوغرافي محفوظًا: جلب آخر معطيات من المركز وتحديث النسخة المحلية بصمت
@@ -242,11 +286,13 @@
         setLS(LS_INFO, JSON.stringify(j.info));
         setLS(LS_UPDATED, j.updatedAt || '');
         refreshDot();
+    refreshCardMeta();
       })
       .catch(function () { /* اختياري */ });
   }
 
   if (getMecano()) refreshDot();
+    refreshCardMeta();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoSync);
   else autoSync();
 
