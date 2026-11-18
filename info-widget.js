@@ -127,6 +127,7 @@
       '</span>' +
       '<span class="go">تعبئة المعلومات ←</span>';
     grid.insertBefore(card, grid.firstChild);
+    refreshCardMeta();
     card.addEventListener('click', openPanel);
   }
 
